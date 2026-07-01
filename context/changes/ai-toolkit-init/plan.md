@@ -489,13 +489,13 @@ Not applicable — greenfield. Consumer projects have no prior `@mraubo/ai-toolk
 
 #### Automated
 
-- [x] 4.1 `npm test` passes all install/uninstall tests
-- [x] 4.2 `npm pack --dry-run` succeeds in CI validate job
-- [x] 4.3 `node --check` passes on all src/ and bin/ files
+- [x] 4.1 `npm test` passes all install/uninstall tests — 87ad6f4
+- [x] 4.2 `npm pack --dry-run` succeeds in CI validate job — 87ad6f4
+- [x] 4.3 `node --check` passes on all src/ and bin/ files — 87ad6f4
 
 #### Manual
 
-- [x] 4.4 `scripts/setup.sh` enables npx install on fresh machine
+- [x] 4.4 `scripts/setup.sh` enables npx install on fresh machine — 87ad6f4
 - [ ] 4.5 PHP colleague milestone: `.cursor/skills/code-review/` + `AGENTS.md` without composer.json
 - [ ] 4.6 Tag `v0.1.0` publish; install from published package works
 - [ ] 4.7 Uninstall after published install leaves no toolkit artifacts
