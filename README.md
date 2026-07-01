@@ -42,7 +42,7 @@ grep -q '//npm.pkg.github.com/:_authToken=' ~/.npmrc 2>/dev/null || \
 From any project directory (PHP, Elixir, Node — no `package.json` required):
 
 ```bash
-npx -y @mraubo/ai-toolkit@0.1.0 install
+npx -y @mraubo/ai-toolkit@0.1.1 install
 ```
 
 Interactive flow detects stack and installed agents, then prompts for scope and conflicts.
@@ -50,7 +50,7 @@ Interactive flow detects stack and installed agents, then prompts for scope and 
 Non-interactive example:
 
 ```bash
-npx -y @mraubo/ai-toolkit@0.1.0 install \
+npx -y @mraubo/ai-toolkit@0.1.1 install \
   --agent cursor \
   --scope project \
   --yes
@@ -81,7 +81,7 @@ npx -y @mraubo/ai-toolkit@0.1.0 install \
 Removes only manifest-tracked files:
 
 ```bash
-npx -y @mraubo/ai-toolkit@0.1.0 uninstall --yes
+npx -y @mraubo/ai-toolkit@0.1.1 uninstall --yes
 ```
 
 ## Conflict behavior
@@ -117,8 +117,8 @@ npm test
 
 ```bash
 npm test
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.1.1
+git push origin v0.1.1
 ```
 
 CI runs tests, `npm pack --dry-run`, then publishes to GitHub Packages.
