@@ -24,11 +24,11 @@ export function copyArtifact(src, dest) {
   cpSync(src, dest, { recursive: true, force: true });
 }
 
-export function backupFile(dest, backupDir) {
+export function backupFile(dest, backupDir, { label } = {}) {
   if (!existsSync(dest)) return null;
 
   mkdirSync(backupDir, { recursive: true });
-  const backupPath = join(backupDir, basename(dest));
+  const backupPath = join(backupDir, label ?? basename(dest));
   cpSync(dest, backupPath, { recursive: true, force: true });
   return backupPath;
 }

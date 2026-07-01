@@ -1,7 +1,29 @@
 import { existsSync, readdirSync, rmSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, join, resolve, sep } from "node:path";
 
 import { readManifest } from "./manifest.js";
+
+function isOutsideTarget(dest, target) {
+  const resolvedDest = resolve(dest);
+  const resolvedTarget = resolve(target);
+  if (resolvedDest === resolvedTarget) return false;
+  return !resolvedDest.startsWith(`${resolvedTarget}${sep}`);
+}
+
+function warnGlobalPaths(manifest, target) {
+  const globalPaths = (manifest.files ?? []).filter((entry) => isOutsideTarget(entry.dest, target));
+  if (globalPaths.length === 0) return;
+
+  console.warn(
+    `\n⚠ This manifest includes ${globalPaths.length} path(s) outside the project (${target}):`,
+  );
+  for (const entry of globalPaths) {
+    console.warn(`    ${entry.dest}`);
+  }
+  console.warn(
+    "  Uninstall will remove these shared global files. Other projects may depend on them.\n",
+  );
+}
 
 function removePath(path) {
   if (!existsSync(path)) return;
@@ -32,6 +54,8 @@ export async function uninstall(flags = {}) {
     console.log("No manifest found — nothing to uninstall.");
     return;
   }
+
+  warnGlobalPaths(manifest, target);
 
   for (const entry of manifest.files ?? []) {
     removePath(entry.dest);

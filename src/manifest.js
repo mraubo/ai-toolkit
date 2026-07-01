@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const MANIFEST_DIR = ".ai-toolkit";
@@ -17,7 +17,10 @@ export function readManifest(cwd) {
 export function writeManifest(cwd, data) {
   const dir = join(cwd, MANIFEST_DIR);
   mkdirSync(dir, { recursive: true });
-  writeFileSync(manifestPath(cwd), `${JSON.stringify(data, null, 2)}\n`);
+  const finalPath = manifestPath(cwd);
+  const tmpPath = join(dir, `${MANIFEST_FILE}.tmp`);
+  writeFileSync(tmpPath, `${JSON.stringify(data, null, 2)}\n`);
+  renameSync(tmpPath, finalPath);
 }
 
 export function findEntry(manifest, dest) {

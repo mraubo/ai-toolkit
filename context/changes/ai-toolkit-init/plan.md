@@ -30,7 +30,7 @@ This is a greenfield build. The repo currently has design docs (`context/propose
 ### Key Discoveries:
 
 - Template installer (`.cursor/config-templates/m5l4-github-packages-install.js.template`) demonstrates `findProjectRoot()`, recursive `copyDir()`, and manifest tracking — adapt patterns into ESM `src/copy.js` and `src/manifest.js`
-- Template uses sentinel-merge for rules; **decision: copy-only** — write separate `AGENTS.md` / `CLAUDE.md` per agent without merging into existing files
+- Template uses sentinel-merge for rules; **decision: copy-only for skills** — write separate `AGENTS.md` / `CLAUDE.md` per agent without merging into existing files; **v0.1 addendum**: optional sentinel-block merge/prepend for rules files via interactive `[m]` (see `src/rules-merge.js`)
 - Template manifest at `.claude/.ai-toolkit-manifest.json` without hashes; **decision: unified** `.ai-toolkit/manifest.json` with per-file SHA256
 - Template publishes on push to main; **decision: tag-triggered** `v*.*.*` semver publish per propose-unified
 
@@ -59,7 +59,7 @@ After this plan completes:
 - `update`, `list`, `doctor` subcommands (deferred to v1.1)
 - `prompts/` and `.mdc` cursor rules (deferred to v1.1)
 - Granular `--skill` / `--rule` / `--prompt` selectors (deferred to v1.1)
-- Rules sentinel-merge into existing `CLAUDE.md` (copy-only per decision)
+- Rules sentinel-merge into existing `CLAUDE.md` (copy-only per decision) — **amended v0.1**: interactive `[m] Merge/prepend` added for rules files only; skills remain copy-only
 - AWS CodeArtifact path (`pack-init` / `tf-registry` skills)
 - `postinstall` auto-install hook (explicit `npx … install` or `ai-toolkit install` only — avoids surprising installs on `npm install`)
 - Tor „bez Node" (`curl | bash` tarball) — deferred to v2
@@ -277,8 +277,8 @@ Add production-grade conflict resolution, non-interactive flags, and global scop
 |---|---|---|---|
 | Does not exist | copy | copy | copy |
 | Exists, hash matches manifest | overwrite (update) | overwrite | overwrite |
-| Exists, not in manifest (user file) | prompt: skip/backup/overwrite | overwrite | skip + warning |
-| Exists, hash ≠ manifest (user modified) | prompt: skip/backup/overwrite | overwrite | skip + warning |
+| Exists, not in manifest (user file) | prompt: skip/backup/overwrite (+ merge for rules) | overwrite | skip + warning |
+| Exists, hash ≠ manifest (user modified) | prompt: skip/backup/overwrite (+ merge for rules) | overwrite | skip + warning |
 
 Backup destination to `.ai-toolkit/backups/<timestamp>/` before overwrite when backup is chosen or forced.
 

@@ -39,6 +39,9 @@ export async function decideAction(state, dest, flags, { allowMerge = false } = 
   }
 
   if (flags.force) {
+    if (state === "user-owned" || state === "modified") {
+      return { action: "backup-and-copy", reason: "force" };
+    }
     return { action: "copy", reason: "force" };
   }
 

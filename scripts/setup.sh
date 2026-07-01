@@ -45,21 +45,34 @@ ensure_gh_auth() {
   echo "✓ gh auth (read:packages)"
 }
 
-append_npmrc_line() {
+upsert_npmrc_line() {
   local line="$1"
   local pattern="$2"
-  if [ -f "${NPMRC}" ] && grep -qF "${pattern}" "${NPMRC}"; then
-    return 0
+  touch "${NPMRC}"
+
+  if grep -qF "${pattern}" "${NPMRC}"; then
+    local tmp
+    tmp="$(mktemp)"
+    while IFS= read -r current || [ -n "${current}" ]; do
+      if [[ "${current}" == *"${pattern}"* ]]; then
+        printf '%s\n' "${line}"
+      else
+        printf '%s\n' "${current}"
+      fi
+    done < "${NPMRC}" > "${tmp}"
+    mv "${tmp}" "${NPMRC}"
+  else
+    printf '%s\n' "${line}" >> "${NPMRC}"
   fi
-  printf '%s\n' "${line}" >> "${NPMRC}"
 }
 
 configure_npmrc() {
   local token
   token="$(gh auth token)"
 
-  append_npmrc_line "${SCOPE}:registry=${REGISTRY}" "${SCOPE}:registry="
-  append_npmrc_line "//npm.pkg.github.com/:_authToken=${token}" "//npm.pkg.github.com/:_authToken="
+  upsert_npmrc_line "${SCOPE}:registry=${REGISTRY}" "${SCOPE}:registry="
+  upsert_npmrc_line "//npm.pkg.github.com/:_authToken=${token}" "//npm.pkg.github.com/:_authToken="
+  chmod 600 "${NPMRC}"
   echo "✓ ~/.npmrc configured for ${SCOPE}"
 }
 

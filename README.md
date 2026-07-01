@@ -84,6 +84,8 @@ Removes only manifest-tracked files:
 npx -y @mraubo/ai-toolkit@0.1.2 uninstall --yes
 ```
 
+**Global scope warning:** If you installed with `--scope global` or `both`, the manifest may include paths under your home directory (e.g. `~/.cursor/skills/code-review/`, `~/AGENTS.md`). Running `uninstall` from a project removes **all** manifest-tracked paths — including shared global artifacts that other projects may rely on. Review `.ai-toolkit/manifest.json` before uninstalling, or reinstall globally from a dedicated directory if you only want to clean one project.
+
 ## Conflict behavior
 
 When a destination file already exists:

@@ -163,6 +163,7 @@ async function applyCopy({
   flags,
   backupRoot,
   dryRun,
+  scopeChoice,
 }) {
   const state = isDirectory
     ? getDirConflictState(dest, manifest)
@@ -175,6 +176,10 @@ async function applyCopy({
   const decision = await decideAction(state, dest, flags, { allowMerge: isRulesFile });
 
   if (decision.action === "skip") {
+    if (dryRun && decision.warn) {
+      console.log(`  → ${src} → ${dest} (would skip: ${state})`);
+      return { copied: true, skipped: false, dryRun: true };
+    }
     if (decision.warn) conflictWarning(dest, state);
     return { copied: false, skipped: true };
   }
@@ -192,7 +197,8 @@ async function applyCopy({
   }
 
   if (decision.action === "backup-and-copy" || decision.action === "merge-prepend") {
-    const backupPath = backupFile(dest, backupRoot);
+    const backupLabel = scopeChoice ? `${scopeChoice}-${basename(dest)}` : basename(dest);
+    const backupPath = backupFile(dest, backupRoot, { label: backupLabel });
     if (backupPath) console.log(`  ↳ backup ${backupPath}`);
   }
 
@@ -239,6 +245,16 @@ export async function install(flags = {}) {
 
   let manifestFiles = [...(existingManifest?.files ?? [])];
   let copiedCount = 0;
+  const installedAt = existingManifest?.installedAt ?? new Date().toISOString();
+
+  const flushManifest = () => {
+    writeManifest(target, {
+      version: pkg.version,
+      installedAt,
+      agents: mergeAgents(existingManifest?.agents, agents),
+      files: manifestFiles,
+    });
+  };
 
   for (const agent of agents) {
     const rulesFile = RULES_BY_AGENT[agent];
@@ -258,6 +274,7 @@ export async function install(flags = {}) {
           flags,
           backupRoot,
           dryRun,
+          scopeChoice,
         });
 
         if (!result.copied) continue;
@@ -268,6 +285,7 @@ export async function install(flags = {}) {
         for (const entry of buildSkillManifestEntries(contentDir, skillName, dest, agent)) {
           manifestFiles = upsertFileEntry(manifestFiles, entry);
         }
+        flushManifest();
       }
 
       const rulesSrc = join(contentDir, "rules", rulesFile);
@@ -283,6 +301,7 @@ export async function install(flags = {}) {
         flags,
         backupRoot,
         dryRun,
+        scopeChoice,
       });
 
       if (!result.copied) continue;
@@ -294,6 +313,7 @@ export async function install(flags = {}) {
         manifestFiles,
         buildRulesManifestEntry(contentDir, rulesFile, rulesDest, agent),
       );
+      flushManifest();
     }
   }
 
@@ -302,13 +322,6 @@ export async function install(flags = {}) {
     closePrompts();
     return;
   }
-
-  writeManifest(target, {
-    version: pkg.version,
-    installedAt: new Date().toISOString(),
-    agents: mergeAgents(existingManifest?.agents, agents),
-    files: manifestFiles,
-  });
 
   closePrompts();
   console.log(`\n✅ Done. Copied ${copiedCount} artifact(s).`);

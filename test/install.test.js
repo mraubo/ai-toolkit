@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import {
   existsSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
   writeFileSync,
@@ -12,13 +13,16 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
+import { backupFile } from "../src/copy.js";
+
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const CLI = join(ROOT, "bin/cli.js");
 
-function runInstall(args, cwd) {
+function runInstall(args, cwd, input) {
   return spawnSync("node", [CLI, "install", ...args], {
     cwd,
     encoding: "utf8",
+    input,
   });
 }
 
@@ -156,6 +160,11 @@ test("--force overwrites user-owned AGENTS.md and records hash in manifest", () 
     const content = readFileSync(join(project, "AGENTS.md"), "utf8");
     assert.match(content, /Team Engineering Conventions/);
 
+    const backupsDir = join(project, ".ai-toolkit", "backups");
+    assert.ok(existsSync(backupsDir));
+    const [timestampDir] = readdirSync(backupsDir);
+    assert.equal(readFileSync(join(backupsDir, timestampDir, "project-AGENTS.md"), "utf8"), "# user-owned\n");
+
     const manifest = assertManifestValid(
       join(project, ".ai-toolkit/manifest.json"),
     );
@@ -179,6 +188,39 @@ test("--dry-run lists copies without writing files", () => {
     assert.match(install.stdout, /→/);
     assert.equal(existsSync(join(project, ".cursor/skills/code-review/SKILL.md")), false);
     assert.equal(existsSync(join(project, ".ai-toolkit/manifest.json")), false);
+  } finally {
+    rmSync(project, { recursive: true, force: true });
+  }
+});
+
+test("--dry-run logs would-skip for user-owned conflicts", () => {
+  const project = tempProject();
+  try {
+    writeFileSync(join(project, "AGENTS.md"), "# user-owned\n", "utf8");
+
+    const install = runInstall(
+      ["--dry-run", "--yes", "--agent", "cursor", "--scope", "project"],
+      project,
+    );
+    assert.equal(install.status, 0, install.stderr || install.stdout);
+    assert.match(install.stdout, /would skip: user-owned/);
+    assert.equal(existsSync(join(project, "AGENTS.md")), true);
+    assert.equal(readFileSync(join(project, "AGENTS.md"), "utf8"), "# user-owned\n");
+  } finally {
+    rmSync(project, { recursive: true, force: true });
+  }
+});
+
+test("backupFile writes scope-prefixed backup on conflict", () => {
+  const project = tempProject();
+  try {
+    const dest = join(project, "AGENTS.md");
+    writeFileSync(dest, "# user-owned\n", "utf8");
+    const backupDir = join(project, ".ai-toolkit", "backups", String(Date.now()));
+    const backupPath = backupFile(dest, backupDir, { label: "project-AGENTS.md" });
+    assert.ok(backupPath);
+    assert.ok(existsSync(join(backupDir, "project-AGENTS.md")));
+    assert.equal(readFileSync(backupPath, "utf8"), "# user-owned\n");
   } finally {
     rmSync(project, { recursive: true, force: true });
   }
