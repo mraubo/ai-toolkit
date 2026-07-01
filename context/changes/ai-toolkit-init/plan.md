@@ -461,14 +461,14 @@ Not applicable — greenfield. Consumer projects have no prior `@mraubo/ai-toolk
 
 #### Automated
 
-- [ ] 2.1 Install to test fixture creates expected cursor files
-- [ ] 2.2 Uninstall removes all installed files and manifest
-- [ ] 2.3 `npm pack --dry-run` includes content, tools.json, src modules
+- [x] 2.1 Install to test fixture creates expected cursor files
+- [x] 2.2 Uninstall removes all installed files and manifest
+- [x] 2.3 `npm pack --dry-run` includes content, tools.json, src modules
 
 #### Manual
 
-- [ ] 2.4 Interactive install prompts agent selection in real project
-- [ ] 2.5 `code-review` skill visible in Cursor after install
+- [x] 2.4 Interactive install prompts agent selection in real project
+- [x] 2.5 `code-review` skill visible in Cursor after install
 
 ### Phase 3: Conflict Handling & CLI Flags
 
