@@ -24,3 +24,23 @@ export function findEntry(manifest, dest) {
   if (!manifest?.files) return undefined;
   return manifest.files.find((entry) => entry.dest === dest);
 }
+
+export function findEntriesUnder(manifest, dirPath) {
+  if (!manifest?.files) return [];
+  const prefix = dirPath.endsWith("/") ? dirPath : `${dirPath}/`;
+  return manifest.files.filter(
+    (entry) => entry.dest === dirPath || entry.dest.startsWith(prefix),
+  );
+}
+
+export function upsertFileEntry(files, entry) {
+  const next = [...files];
+  const index = next.findIndex((item) => item.dest === entry.dest);
+  if (index >= 0) next[index] = entry;
+  else next.push(entry);
+  return next;
+}
+
+export function mergeAgents(existing, added) {
+  return [...new Set([...(existing ?? []), ...added])];
+}

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, readFileSync } from "node:fs";
-import { dirname } from "node:path";
+import { basename, dirname, join } from "node:path";
 import os from "node:os";
 
 export function expandTilde(path) {
@@ -28,8 +28,7 @@ export function backupFile(dest, backupDir) {
   if (!existsSync(dest)) return null;
 
   mkdirSync(backupDir, { recursive: true });
-  const basename = dest.split(/[/\\]/).pop();
-  const backupPath = `${backupDir}/${basename}`;
-  cpSync(dest, backupPath, { force: true });
+  const backupPath = join(backupDir, basename(dest));
+  cpSync(dest, backupPath, { recursive: true, force: true });
   return backupPath;
 }

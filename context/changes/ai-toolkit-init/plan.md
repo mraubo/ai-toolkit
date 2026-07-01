@@ -461,29 +461,29 @@ Not applicable — greenfield. Consumer projects have no prior `@mraubo/ai-toolk
 
 #### Automated
 
-- [x] 2.1 Install to test fixture creates expected cursor files
-- [x] 2.2 Uninstall removes all installed files and manifest
-- [x] 2.3 `npm pack --dry-run` includes content, tools.json, src modules
+- [x] 2.1 Install to test fixture creates expected cursor files — 58f7885
+- [x] 2.2 Uninstall removes all installed files and manifest — 58f7885
+- [x] 2.3 `npm pack --dry-run` includes content, tools.json, src modules — 58f7885
 
 #### Manual
 
-- [x] 2.4 Interactive install prompts agent selection in real project
-- [x] 2.5 `code-review` skill visible in Cursor after install
+- [x] 2.4 Interactive install prompts agent selection in real project — 58f7885
+- [x] 2.5 `code-review` skill visible in Cursor after install — 58f7885
 
 ### Phase 3: Conflict Handling & CLI Flags
 
 #### Automated
 
-- [ ] 3.1 `--dry-run` lists copies without creating files
-- [ ] 3.2 `--yes` skips overwrite of user-owned file with warning
-- [ ] 3.3 `--force` overwrites and updates manifest hash
-- [ ] 3.4 Backup created at `.ai-toolkit/backups/<timestamp>/` on conflict
+- [x] 3.1 `--dry-run` lists copies without creating files
+- [x] 3.2 `--yes` skips overwrite of user-owned file with warning
+- [x] 3.3 `--force` overwrites and updates manifest hash
+- [x] 3.4 Backup created at `.ai-toolkit/backups/<timestamp>/` on conflict
 
 #### Manual
 
-- [ ] 3.5 Interactive conflict prompt offers skip/backup/overwrite
-- [ ] 3.6 `--scope global` installs to `~/.cursor/skills/`
-- [ ] 3.7 Re-install with unchanged content is idempotent
+- [x] 3.5 Interactive conflict prompt offers skip/backup/overwrite
+- [x] 3.6 `--scope global` installs to `~/.cursor/skills/`
+- [x] 3.7 Re-install with unchanged content is idempotent
 
 ### Phase 4: Onboarding, Tests & Documentation
 

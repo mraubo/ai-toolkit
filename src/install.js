@@ -8,9 +8,21 @@ import {
   listAgentIds,
   resolveTarget,
 } from "./agents.js";
-import { copyArtifact, hashFile } from "./copy.js";
-import { writeManifest } from "./manifest.js";
-import { confirm, prompt } from "./prompt.js";
+import {
+  conflictWarning,
+  decideAction,
+  getDirConflictState,
+  getFileConflictState,
+} from "./conflict.js";
+import { backupFile, copyArtifact, hashFile } from "./copy.js";
+import {
+  mergeAgents,
+  readManifest,
+  upsertFileEntry,
+  writeManifest,
+} from "./manifest.js";
+import { confirm, closePrompts, prompt } from "./prompt.js";
+import { mergeRulesFile, writeMergedRules } from "./rules-merge.js";
 import { detectStack } from "./stack.js";
 
 const pkg = JSON.parse(
@@ -23,7 +35,8 @@ const RULES_BY_AGENT = {
 };
 
 function parseAgentFlag(value) {
-  if (!value || value === "all") return null;
+  if (!value) return null;
+  if (value === "all") return listAgentIds();
   return value.split(",").map((a) => a.trim()).filter(Boolean);
 }
 
@@ -46,7 +59,7 @@ async function selectAgents(cwd, flags) {
   const detected = detectAgents(cwd);
   if (detected.length === 1) return detected;
 
-  if (flags.yes) {
+  if (flags.yes || flags["dry-run"]) {
     return detected.length > 0 ? detected : listAgentIds();
   }
 
@@ -74,7 +87,7 @@ async function selectScope(flags) {
   const fromFlag = parseScopeFlag(flags.scope);
   if (fromFlag) return fromFlag;
 
-  if (flags.yes) return "project";
+  if (flags.yes || flags["dry-run"]) return "project";
 
   console.log("\nInstall scope:");
   console.log("  [1] Project");
@@ -107,12 +120,95 @@ function collectSkillFiles(skillDir) {
   return files;
 }
 
+function buildSkillManifestEntries(contentDir, skillName, destDir, agent) {
+  const entries = [];
+  const srcDir = join(contentDir, "skills", skillName);
+
+  function walkSrc(currentSrc, currentDest) {
+    for (const entry of readdirSync(currentSrc, { withFileTypes: true })) {
+      const srcPath = join(currentSrc, entry.name);
+      const destPath = join(currentDest, entry.name);
+      if (entry.isDirectory()) {
+        walkSrc(srcPath, destPath);
+      } else {
+        entries.push({
+          src: join("content/skills", skillName, srcPath.slice(srcDir.length + 1)),
+          dest: destPath,
+          hash: hashFile(destPath),
+          agent,
+        });
+      }
+    }
+  }
+
+  walkSrc(srcDir, destDir);
+  return entries;
+}
+
+function buildRulesManifestEntry(contentDir, rulesFile, dest, agent) {
+  return {
+    src: join("content/rules", rulesFile),
+    dest,
+    hash: hashFile(dest),
+    agent,
+  };
+}
+
+async function applyCopy({
+  src,
+  dest,
+  isDirectory,
+  isRulesFile,
+  manifest,
+  flags,
+  backupRoot,
+  dryRun,
+}) {
+  const state = isDirectory
+    ? getDirConflictState(dest, manifest)
+    : getFileConflictState(dest, manifest);
+  const decision = await decideAction(state, dest, flags, { allowMerge: isRulesFile });
+
+  if (decision.action === "skip") {
+    if (decision.warn) conflictWarning(dest, state);
+    return { copied: false, skipped: true };
+  }
+
+  const label = dryRun ? "→" : "✓";
+  if (dryRun) {
+    const action =
+      decision.action === "merge-prepend" ? `${src} → ${dest} (merge/prepend)` : `${src} → ${dest}`;
+    console.log(`  ${label} ${action}`);
+    return { copied: true, skipped: false, dryRun: true };
+  }
+
+  if (decision.action === "backup-and-copy" || decision.action === "merge-prepend") {
+    const backupPath = backupFile(dest, backupRoot);
+    if (backupPath) console.log(`  ↳ backup ${backupPath}`);
+  }
+
+  if (decision.action === "merge-prepend") {
+    const toolkitContent = readFileSync(src, "utf8");
+    writeMergedRules(dest, mergeRulesFile(dest, toolkitContent));
+    console.log(`  ${label} ${dest} (merge/prepend)`);
+    return { copied: true, skipped: false };
+  }
+
+  copyArtifact(src, dest);
+  console.log(`  ${label} ${dest}`);
+  return { copied: true, skipped: false };
+}
+
 export async function install(flags = {}) {
+  const dryRun = Boolean(flags["dry-run"]);
   const target = flags.target ? resolve(process.cwd(), flags.target) : process.cwd();
   const contentDir = join(getPackageRoot(), "content");
   const stack = detectStack(target);
+  const existingManifest = readManifest(target);
+  const backupRoot = join(target, ".ai-toolkit", "backups", String(Date.now()));
 
   console.log(`🔍 Stack: ${stack}`);
+  if (dryRun) console.log("🏃 Dry run — no files will be written\n");
 
   const agents = await selectAgents(target, flags);
   const scope = await selectScope(flags);
@@ -123,16 +219,17 @@ export async function install(flags = {}) {
   console.log(`🎯 Agents: ${agents.map(getAgentName).join(", ")}`);
   console.log(`📁 Scope: ${scope}`);
 
-  if (!flags.yes) {
+  if (!flags.yes && !dryRun) {
     const ok = await confirm("\nContinue?", true);
     if (!ok) {
       console.log("Install cancelled.");
+      closePrompts();
       return;
     }
   }
 
-  const manifestFiles = [];
-  const manifestAgents = [...new Set(agents)];
+  let manifestFiles = [...(existingManifest?.files ?? [])];
+  let copiedCount = 0;
 
   for (const agent of agents) {
     const rulesFile = RULES_BY_AGENT[agent];
@@ -144,40 +241,66 @@ export async function install(flags = {}) {
       for (const skillName of skillNames) {
         const src = join(contentDir, "skills", skillName);
         const dest = join(skillsDestRoot, skillName);
-        copyArtifact(src, dest);
-        console.log(`  ✓ ${dest}`);
+        const result = await applyCopy({
+          src,
+          dest,
+          isDirectory: true,
+          manifest: existingManifest,
+          flags,
+          backupRoot,
+          dryRun,
+        });
 
-        for (const file of collectSkillFiles(dest)) {
-          manifestFiles.push({
-            src: join("content/skills", skillName, file.slice(dest.length + 1)),
-            dest: file,
-            hash: hashFile(file),
-            agent,
-          });
+        if (!result.copied) continue;
+
+        copiedCount += 1;
+        if (dryRun) continue;
+
+        for (const entry of buildSkillManifestEntries(contentDir, skillName, dest, agent)) {
+          manifestFiles = upsertFileEntry(manifestFiles, entry);
         }
       }
 
       const rulesSrc = join(contentDir, "rules", rulesFile);
       const rulesDest = resolveTarget(agent, scopeChoice, "rules", target);
-      if (existsSync(rulesSrc)) {
-        copyArtifact(rulesSrc, rulesDest);
-        console.log(`  ✓ ${rulesDest}`);
-        manifestFiles.push({
-          src: join("content/rules", rulesFile),
-          dest: rulesDest,
-          hash: hashFile(rulesDest),
-          agent,
-        });
-      }
+      if (!existsSync(rulesSrc)) continue;
+
+      const result = await applyCopy({
+        src: rulesSrc,
+        dest: rulesDest,
+        isDirectory: false,
+        isRulesFile: true,
+        manifest: existingManifest,
+        flags,
+        backupRoot,
+        dryRun,
+      });
+
+      if (!result.copied) continue;
+
+      copiedCount += 1;
+      if (dryRun) continue;
+
+      manifestFiles = upsertFileEntry(
+        manifestFiles,
+        buildRulesManifestEntry(contentDir, rulesFile, rulesDest, agent),
+      );
     }
+  }
+
+  if (dryRun) {
+    console.log(`\n🏃 Dry run complete. ${copiedCount} copy action(s) planned.`);
+    closePrompts();
+    return;
   }
 
   writeManifest(target, {
     version: pkg.version,
     installedAt: new Date().toISOString(),
-    agents: manifestAgents,
+    agents: mergeAgents(existingManifest?.agents, agents),
     files: manifestFiles,
   });
 
-  console.log(`\n✅ Done. Copied ${manifestFiles.length} file(s).`);
+  closePrompts();
+  console.log(`\n✅ Done. Copied ${copiedCount} artifact(s).`);
 }

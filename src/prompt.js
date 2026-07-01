@@ -1,13 +1,17 @@
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 
-export async function prompt(question) {
-  const rl = readline.createInterface({ input, output });
-  try {
-    return (await rl.question(question)).trim();
-  } finally {
-    rl.close();
+let rl;
+
+function getInterface() {
+  if (!rl) {
+    rl = readline.createInterface({ input, output });
   }
+  return rl;
+}
+
+export async function prompt(question) {
+  return (await getInterface().question(question)).trim();
 }
 
 export async function confirm(question, defaultYes = true) {
@@ -15,4 +19,11 @@ export async function confirm(question, defaultYes = true) {
   const answer = await prompt(`${question} ${hint}: `);
   if (!answer) return defaultYes;
   return answer.toLowerCase().startsWith("y");
+}
+
+export function closePrompts() {
+  if (rl) {
+    rl.close();
+    rl = undefined;
+  }
 }
