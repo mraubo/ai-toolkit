@@ -449,13 +449,13 @@ Not applicable — greenfield. Consumer projects have no prior `@mraubo/ai-toolk
 
 #### Automated
 
-- [x] 1.1 `npm pack --dry-run` succeeds and lists `bin/cli.js`
-- [x] 1.2 `node bin/cli.js` prints usage without error
+- [x] 1.1 `npm pack --dry-run` succeeds and lists `bin/cli.js` — d8f0685
+- [x] 1.2 `node bin/cli.js` prints usage without error — d8f0685
 
 #### Manual
 
-- [x] 1.3 Tag `v0.0.1` pushed; GH Actions publish succeeds
-- [x] 1.4 `npx -y @mraubo/ai-toolkit@0.0.1` runs stub CLI from non-JS project
+- [x] 1.3 Tag `v0.0.1` pushed; GH Actions publish succeeds — d8f0685
+- [x] 1.4 `npx -y @mraubo/ai-toolkit@0.0.1` runs stub CLI from non-JS project — d8f0685
 
 ### Phase 2: Core Installer
 
