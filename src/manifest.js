@@ -1,8 +1,12 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 const MANIFEST_DIR = ".ai-toolkit";
 const MANIFEST_FILE = "manifest.json";
+
+function normalizePath(path) {
+  return resolve(path);
+}
 
 export function manifestPath(cwd) {
   return join(cwd, MANIFEST_DIR, MANIFEST_FILE);
@@ -25,20 +29,25 @@ export function writeManifest(cwd, data) {
 
 export function findEntry(manifest, dest) {
   if (!manifest?.files) return undefined;
-  return manifest.files.find((entry) => entry.dest === dest);
+  const normalized = normalizePath(dest);
+  return manifest.files.find((entry) => normalizePath(entry.dest) === normalized);
 }
 
 export function findEntriesUnder(manifest, dirPath) {
   if (!manifest?.files) return [];
-  const prefix = dirPath.endsWith("/") ? dirPath : `${dirPath}/`;
+  const prefix = `${normalizePath(dirPath)}/`;
   return manifest.files.filter(
-    (entry) => entry.dest === dirPath || entry.dest.startsWith(prefix),
+    (entry) => {
+      const entryPath = normalizePath(entry.dest);
+      return entryPath === normalizePath(dirPath) || entryPath.startsWith(prefix);
+    },
   );
 }
 
 export function upsertFileEntry(files, entry) {
   const next = [...files];
-  const index = next.findIndex((item) => item.dest === entry.dest);
+  const normalized = normalizePath(entry.dest);
+  const index = next.findIndex((item) => normalizePath(item.dest) === normalized);
   if (index >= 0) next[index] = entry;
   else next.push(entry);
   return next;

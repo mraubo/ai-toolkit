@@ -398,25 +398,25 @@ Existing `.ai-toolkit/manifest.json` from v0.1.x remains valid. `update` adds op
 
 #### Automated
 
-- [x] 1.1 `npm test` passes including new Codex install test
-- [x] 1.2 `node --check` on all `src/` and `bin/` files
+- [x] 1.1 `npm test` passes including new Codex install test — 1c627c3
+- [x] 1.2 `node --check` on all `src/` and `bin/` files — 1c627c3
 
 #### Manual
 
-- [x] 1.3 Interactive install detects Codex when markers present
-- [x] 1.4 Codex skill visible in Codex CLI after install
+- [x] 1.3 Interactive install detects Codex when markers present — 1c627c3
+- [x] 1.4 Codex skill visible in Codex CLI after install — 1c627c3
 
 ### Phase 2: `list`, `doctor`, `update` Commands
 
 #### Automated
 
-- [ ] 2.1 `npm test` passes all new command tests
-- [ ] 2.2 `node bin/cli.js list` exits 0 and lists `code-review`
+- [x] 2.1 `npm test` passes all new command tests
+- [x] 2.2 `node bin/cli.js list` exits 0 and lists `code-review`
 
 #### Manual
 
-- [ ] 2.3 `doctor` on misconfigured `~/.npmrc` prints actionable auth hint
-- [ ] 2.4 `update` refreshes hashes after local content change
+- [x] 2.3 `doctor` on misconfigured `~/.npmrc` prints actionable auth hint
+- [x] 2.4 `update` refreshes hashes after local content change
 
 ### Phase 3: Granular Selection + Prompts + Cursor Rules
 
