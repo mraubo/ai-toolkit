@@ -50,3 +50,9 @@ auth.json
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# ai-toolkit local dev artifacts
+*.tgz
+.ai-toolkit/
+test-fixtures/**/.cursor/
+test-fixtures/**/.ai-toolkit/

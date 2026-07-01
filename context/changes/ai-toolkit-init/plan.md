@@ -474,28 +474,28 @@ Not applicable — greenfield. Consumer projects have no prior `@mraubo/ai-toolk
 
 #### Automated
 
-- [x] 3.1 `--dry-run` lists copies without creating files
-- [x] 3.2 `--yes` skips overwrite of user-owned file with warning
-- [x] 3.3 `--force` overwrites and updates manifest hash
-- [x] 3.4 Backup created at `.ai-toolkit/backups/<timestamp>/` on conflict
+- [x] 3.1 `--dry-run` lists copies without creating files — b33617c
+- [x] 3.2 `--yes` skips overwrite of user-owned file with warning — b33617c
+- [x] 3.3 `--force` overwrites and updates manifest hash — b33617c
+- [x] 3.4 Backup created at `.ai-toolkit/backups/<timestamp>/` on conflict — b33617c
 
 #### Manual
 
-- [x] 3.5 Interactive conflict prompt offers skip/backup/overwrite
-- [x] 3.6 `--scope global` installs to `~/.cursor/skills/`
-- [x] 3.7 Re-install with unchanged content is idempotent
+- [x] 3.5 Interactive conflict prompt offers skip/backup/overwrite — b33617c
+- [x] 3.6 `--scope global` installs to `~/.cursor/skills/` — b33617c
+- [x] 3.7 Re-install with unchanged content is idempotent — b33617c
 
 ### Phase 4: Onboarding, Tests & Documentation
 
 #### Automated
 
-- [ ] 4.1 `npm test` passes all install/uninstall tests
-- [ ] 4.2 `npm pack --dry-run` succeeds in CI validate job
-- [ ] 4.3 `node --check` passes on all src/ and bin/ files
+- [x] 4.1 `npm test` passes all install/uninstall tests
+- [x] 4.2 `npm pack --dry-run` succeeds in CI validate job
+- [x] 4.3 `node --check` passes on all src/ and bin/ files
 
 #### Manual
 
-- [ ] 4.4 `scripts/setup.sh` enables npx install on fresh machine
+- [x] 4.4 `scripts/setup.sh` enables npx install on fresh machine
 - [ ] 4.5 PHP colleague milestone: `.cursor/skills/code-review/` + `AGENTS.md` without composer.json
 - [ ] 4.6 Tag `v0.1.0` publish; install from published package works
 - [ ] 4.7 Uninstall after published install leaves no toolkit artifacts
