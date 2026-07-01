@@ -1,0 +1,27 @@
+{
+  "name": "@mraubo/ai-toolkit",
+  "version": "0.0.1",
+  "description": "Corporate AI dev artifacts for Cursor and Claude Code",
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mraubo/ai-toolkit.git"
+  },
+  "bin": {
+    "ai-toolkit": "./bin/cli.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "content",
+    "tools.json",
+    "scripts"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}
