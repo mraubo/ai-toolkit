@@ -1,0 +1,51 @@
+# build output
+dist/
+
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# environment variables
+.env
+.env.production
+
+# cloudflare
+.dev.vars
+.wrangler/
+
+# macOS-specific files
+.DS_Store
+
+# jetbrains setting folder
+.idea/
+
+#10xdevs
+.agents/**/10x-*
+.cursor/**/10x-*
+.cursor/**/m4*
+.cursor/**/m5*
+.cookies
+.cursor/prompts/mvp-check.md
+.cursor/prompts/m*
+# stryker temp files
+.stryker-tmp
+reports/mutation
+
+# playwrite CLI
+.playwright-cli
+auth.json
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
