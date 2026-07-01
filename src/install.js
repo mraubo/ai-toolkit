@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { basename, join, resolve } from "node:path";
 
 import {
   detectAgents,
@@ -166,7 +166,12 @@ async function applyCopy({
 }) {
   const state = isDirectory
     ? getDirConflictState(dest, manifest)
-    : getFileConflictState(dest, manifest);
+    : getFileConflictState(dest, manifest, { isRulesFile });
+
+  if (isRulesFile && state === "missing" && !dryRun) {
+    console.log(`  + Creating ${basename(dest)}`);
+  }
+
   const decision = await decideAction(state, dest, flags, { allowMerge: isRulesFile });
 
   if (decision.action === "skip") {
@@ -176,9 +181,13 @@ async function applyCopy({
 
   const label = dryRun ? "→" : "✓";
   if (dryRun) {
-    const action =
-      decision.action === "merge-prepend" ? `${src} → ${dest} (merge/prepend)` : `${src} → ${dest}`;
-    console.log(`  ${label} ${action}`);
+    const verb =
+      state === "missing" && isRulesFile
+        ? `(create ${basename(dest)})`
+        : decision.action === "merge-prepend"
+          ? "(merge/prepend)"
+          : "";
+    console.log(`  ${label} ${src} → ${dest}${verb ? ` ${verb}` : ""}`);
     return { copied: true, skipped: false, dryRun: true };
   }
 

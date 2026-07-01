@@ -78,6 +78,52 @@ test("install and uninstall round-trip (cursor, project scope)", () => {
   }
 });
 
+test("creates AGENTS.md when missing (--yes)", () => {
+  const project = tempProject();
+  try {
+    const install = runInstall(
+      ["--yes", "--agent", "cursor", "--scope", "project"],
+      project,
+    );
+    assert.equal(install.status, 0, install.stderr || install.stdout);
+    assert.match(install.stdout, /Creating AGENTS\.md/);
+    assert.match(readFileSync(join(project, "AGENTS.md"), "utf8"), /Team Engineering Conventions/);
+  } finally {
+    rmSync(project, { recursive: true, force: true });
+  }
+});
+
+test("creates CLAUDE.md when missing (--yes, claude agent)", () => {
+  const project = tempProject();
+  try {
+    const install = runInstall(
+      ["--yes", "--agent", "claude", "--scope", "project"],
+      project,
+    );
+    assert.equal(install.status, 0, install.stderr || install.stdout);
+    assert.match(install.stdout, /Creating CLAUDE\.md/);
+    assert.match(readFileSync(join(project, "CLAUDE.md"), "utf8"), /Team Engineering Conventions/);
+  } finally {
+    rmSync(project, { recursive: true, force: true });
+  }
+});
+
+test("creates AGENTS.md when file is empty (--yes)", () => {
+  const project = tempProject();
+  try {
+    writeFileSync(join(project, "AGENTS.md"), "   \n", "utf8");
+
+    const install = runInstall(
+      ["--yes", "--agent", "cursor", "--scope", "project"],
+      project,
+    );
+    assert.equal(install.status, 0, install.stderr || install.stdout);
+    assert.match(readFileSync(join(project, "AGENTS.md"), "utf8"), /Team Engineering Conventions/);
+  } finally {
+    rmSync(project, { recursive: true, force: true });
+  }
+});
+
 test("--yes skips user-owned AGENTS.md with warning", () => {
   const project = tempProject();
   try {
@@ -88,7 +134,7 @@ test("--yes skips user-owned AGENTS.md with warning", () => {
       project,
     );
     assert.equal(install.status, 0, install.stderr || install.stdout);
-    assert.match(install.stderr + install.stdout, /Skipping.*AGENTS\.md/);
+    assert.match(install.stderr + install.stdout, /Skipping AGENTS\.md.*already exists/);
     assert.equal(readFileSync(join(project, "AGENTS.md"), "utf8"), "# user-owned\n");
     assert.ok(existsSync(join(project, ".cursor/skills/code-review/SKILL.md")));
   } finally {

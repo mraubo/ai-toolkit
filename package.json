@@ -1,6 +1,6 @@
 {
   "name": "@mraubo/ai-toolkit",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Corporate AI dev artifacts for Cursor and Claude Code",
   "author": "Mateusz Raubo <mateusz.raubo@gmail.com>",
   "license": "MIT",

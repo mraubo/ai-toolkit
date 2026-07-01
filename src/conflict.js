@@ -1,11 +1,16 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { basename } from "node:path";
 
 import { hashFile } from "./copy.js";
 import { findEntriesUnder, findEntry } from "./manifest.js";
 import { prompt } from "./prompt.js";
 
-export function getFileConflictState(dest, manifest) {
+export function getFileConflictState(dest, manifest, { isRulesFile = false } = {}) {
   if (!existsSync(dest)) return "missing";
+
+  if (isRulesFile && readFileSync(dest, "utf8").trim() === "") {
+    return "missing";
+  }
 
   const entry = findEntry(manifest, dest);
   if (!entry) return "user-owned";
@@ -63,6 +68,12 @@ export async function decideAction(state, dest, flags, { allowMerge = false } = 
 }
 
 export function conflictWarning(dest, state) {
-  const label = state === "modified" ? "modified by user" : "not tracked by manifest";
-  console.warn(`  ⚠ Skipping ${dest} (${label})`);
+  const name = basename(dest);
+  if (state === "modified") {
+    console.warn(`  ⚠ Skipping ${name} (modified since last install — use --force or run interactively)`);
+    return;
+  }
+  console.warn(
+    `  ⚠ Skipping ${name} (already exists — use --force, or run without --yes to merge/overwrite)`,
+  );
 }

@@ -72,7 +72,7 @@ main() {
   configure_npmrc
   echo
   echo "Done. Install in a project with:"
-  echo "  npx -y @mraubo/ai-toolkit@0.1.1 install"
+  echo "  npx -y @mraubo/ai-toolkit@0.1.2 install"
 }
 
 main "$@"
