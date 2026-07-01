@@ -5,6 +5,7 @@ import {
   detectAgents,
   getAgentName,
   getPackageRoot,
+  getRulesSourceFile,
   listAgentIds,
   resolveTarget,
 } from "./agents.js";
@@ -28,11 +29,6 @@ import { detectStack } from "./stack.js";
 const pkg = JSON.parse(
   readFileSync(join(getPackageRoot(), "package.json"), "utf8"),
 );
-
-const RULES_BY_AGENT = {
-  claude: "CLAUDE.md",
-  cursor: "AGENTS.md",
-};
 
 function parseAgentFlag(value) {
   if (!value) return null;
@@ -257,8 +253,7 @@ export async function install(flags = {}) {
   };
 
   for (const agent of agents) {
-    const rulesFile = RULES_BY_AGENT[agent];
-    if (!rulesFile) continue;
+    const rulesFile = getRulesSourceFile(agent);
 
     for (const scopeChoice of scopesForChoice(scope)) {
       const skillsDestRoot = resolveTarget(agent, scopeChoice, "skills", target);

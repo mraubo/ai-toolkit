@@ -19,7 +19,7 @@ Usage:
   ai-toolkit uninstall [options] Remove manifest-tracked artifacts
 
 Options:
-  --agent <claude,cursor|all>    Target agent(s)
+  --agent <claude,cursor,codex|all>  Target agent(s)
   --scope <project|global|both>  Install scope
   --target <path>                Target project directory
   --yes, -y                      Skip interactive prompts

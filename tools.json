@@ -26,5 +26,19 @@
         "rules_file": "~/AGENTS.md"
       }
     }
+  },
+  "codex": {
+    "name": "Codex CLI",
+    "detect": ["AGENTS.md", ".codex/", ".agents/"],
+    "targets": {
+      "project": {
+        "skills_dir": ".agents/skills",
+        "rules_file": "AGENTS.md"
+      },
+      "global": {
+        "skills_dir": "~/.agents/skills",
+        "rules_file": "~/AGENTS.md"
+      }
+    }
   }
 }

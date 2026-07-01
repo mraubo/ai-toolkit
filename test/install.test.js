@@ -226,6 +226,35 @@ test("backupFile writes scope-prefixed backup on conflict", () => {
   }
 });
 
+test("install and uninstall round-trip (codex, project scope)", () => {
+  const project = tempProject();
+  try {
+    const install = runInstall(
+      ["--yes", "--agent", "codex", "--scope", "project"],
+      project,
+    );
+    assert.equal(install.status, 0, install.stderr || install.stdout);
+
+    const skillPath = join(project, ".agents/skills/code-review/SKILL.md");
+    const rulesPath = join(project, "AGENTS.md");
+    const manifestPath = join(project, ".ai-toolkit/manifest.json");
+
+    assert.ok(existsSync(skillPath));
+    assert.ok(existsSync(rulesPath));
+    const manifest = assertManifestValid(manifestPath);
+    assert.equal(manifest.agents.includes("codex"), true);
+    assert.equal(manifest.files.length, 2);
+
+    const uninstall = runUninstall(["--yes"], project);
+    assert.equal(uninstall.status, 0, uninstall.stderr || uninstall.stdout);
+    assert.equal(existsSync(skillPath), false);
+    assert.equal(existsSync(rulesPath), false);
+    assert.equal(existsSync(manifestPath), false);
+  } finally {
+    rmSync(project, { recursive: true, force: true });
+  }
+});
+
 test("re-install is idempotent (no duplicate manifest entries)", () => {
   const project = tempProject();
   try {

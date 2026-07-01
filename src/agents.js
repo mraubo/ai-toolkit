@@ -8,6 +8,11 @@ import { expandTilde } from "./copy.js";
 
 const packageRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 
+const TARGET_KEYS = {
+  skills: "skills_dir",
+  rules: "rules_file",
+};
+
 let toolsCache;
 
 export function loadTools() {
@@ -49,10 +54,14 @@ export function resolveTarget(agent, scope, artifactType, baseDir) {
     throw new Error(`Unknown scope: ${scope}`);
   }
 
-  const key = artifactType === "skills" ? "skills_dir" : "rules_file";
+  const key = TARGET_KEYS[artifactType];
+  if (!key) {
+    throw new Error(`Unknown artifact type: ${artifactType}`);
+  }
+
   const relative = scopeConfig[key];
   if (!relative) {
-    throw new Error(`Unknown artifact type: ${artifactType}`);
+    throw new Error(`Agent ${agent} has no ${artifactType} target for scope ${scope}`);
   }
 
   if (scope === "global" || relative.startsWith("~/")) {
@@ -68,4 +77,10 @@ export function listAgentIds() {
 
 export function getAgentName(agentId) {
   return loadTools()[agentId]?.name ?? agentId;
+}
+
+export function getRulesSourceFile(agent) {
+  if (agent === "claude") return "CLAUDE.md";
+  if (agent === "cursor" || agent === "codex") return "AGENTS.md";
+  throw new Error(`Unknown agent: ${agent}`);
 }
