@@ -42,6 +42,22 @@ Manual alternative — add to `~/.npmrc`:
 npx -y @mraubo/ai-toolkit@0.0.1
 ```
 
+### Troubleshooting `npx`
+
+**Do not run `npx` from inside this repository.** npm detects the local `package.json` with the same name (`@mraubo/ai-toolkit`) and tries to execute a bin shim that does not exist in the dev tree — you will see `sh: ai-toolkit: command not found`.
+
+Verify consumption from any **other** directory (e.g. a PHP project or `/tmp`):
+
+```bash
+cd /tmp && npx -y @mraubo/ai-toolkit@0.0.1
+```
+
+For local development inside this repo, use:
+
+```bash
+node bin/cli.js
+```
+
 ## Publishing (maintainers)
 
 Push a semver tag to trigger CI publish:
