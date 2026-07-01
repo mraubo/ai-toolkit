@@ -496,6 +496,6 @@ Not applicable — greenfield. Consumer projects have no prior `@mraubo/ai-toolk
 #### Manual
 
 - [x] 4.4 `scripts/setup.sh` enables npx install on fresh machine — 87ad6f4
-- [ ] 4.5 PHP colleague milestone: `.cursor/skills/code-review/` + `AGENTS.md` without composer.json
-- [ ] 4.6 Tag `v0.1.0` publish; install from published package works
-- [ ] 4.7 Uninstall after published install leaves no toolkit artifacts
+- [x] 4.5 PHP colleague milestone: `.cursor/skills/code-review/` + `AGENTS.md` without composer.json
+- [x] 4.6 Tag `v0.1.0` publish; install from published package works
+- [x] 4.7 Uninstall after published install leaves no toolkit artifacts
