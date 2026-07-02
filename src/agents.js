@@ -11,6 +11,9 @@ const packageRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
 const TARGET_KEYS = {
   skills: "skills_dir",
   rules: "rules_file",
+  commands: "commands_dir",
+  prompts: "prompts_dir",
+  rules_dir: "rules_dir",
 };
 
 let toolsCache;

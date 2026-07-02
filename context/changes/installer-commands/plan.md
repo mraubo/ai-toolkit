@@ -410,25 +410,25 @@ Existing `.ai-toolkit/manifest.json` from v0.1.x remains valid. `update` adds op
 
 #### Automated
 
-- [x] 2.1 `npm test` passes all new command tests
-- [x] 2.2 `node bin/cli.js list` exits 0 and lists `code-review`
+- [x] 2.1 `npm test` passes all new command tests — 068fc6e
+- [x] 2.2 `node bin/cli.js list` exits 0 and lists `code-review` — 068fc6e
 
 #### Manual
 
-- [x] 2.3 `doctor` on misconfigured `~/.npmrc` prints actionable auth hint
-- [x] 2.4 `update` refreshes hashes after local content change
+- [x] 2.3 `doctor` on misconfigured `~/.npmrc` prints actionable auth hint — 068fc6e
+- [x] 2.4 `update` refreshes hashes after local content change — 068fc6e
 
 ### Phase 3: Granular Selection + Prompts + Cursor Rules
 
 #### Automated
 
-- [ ] 3.1 `npm test` covers `--skill`-only, `--prompt`, and mdc rule install
-- [ ] 3.2 `npm pack --dry-run` includes `content/prompts/` and new rules
+- [x] 3.1 `npm test` covers `--skill`-only, `--prompt`, and mdc rule install
+- [x] 3.2 `npm pack --dry-run` includes `content/prompts/` and new rules
 
 #### Manual
 
-- [ ] 3.3 Selective install installs only flagged artifacts
-- [ ] 3.4 Prompt file lands in `.cursor/prompts/` (or documented path)
+- [x] 3.3 Selective install installs only flagged artifacts
+- [x] 3.4 Prompt file lands in `.cursor/prompts/` (or documented path)
 
 ### Phase 4: Opt-in Postinstall + Documentation
 

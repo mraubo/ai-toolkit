@@ -27,6 +27,9 @@ Usage:
 Options:
   --agent <claude,cursor,codex|all>  Target agent(s)
   --scope <project|global|both>  Install scope
+  --skill <name>                 Install selected skill(s), comma-separated
+  --rule <name>                  Install selected rule(s) (AGENTS.md, typescript, …)
+  --prompt <name>                Install selected prompt(s), comma-separated
   --target <path>                Target project directory
   --installed                    (list) Show install status from manifest
   --yes, -y                      Skip interactive prompts

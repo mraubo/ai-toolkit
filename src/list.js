@@ -13,7 +13,10 @@ const pkg = JSON.parse(
 
 function catalogSrcPath(type, name) {
   if (type === "skills") return `content/skills/${name}`;
-  if (type === "rules") return `content/rules/${name}`;
+  if (type === "rules") {
+    if (name.startsWith("cursor/")) return `content/rules/${name}`;
+    return `content/rules/${name}`;
+  }
   if (type === "prompts") return `content/prompts/${name}.md`;
   return null;
 }

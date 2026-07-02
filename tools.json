@@ -5,11 +5,13 @@
     "targets": {
       "project": {
         "skills_dir": ".claude/skills",
-        "rules_file": "CLAUDE.md"
+        "rules_file": "CLAUDE.md",
+        "commands_dir": ".claude/commands"
       },
       "global": {
         "skills_dir": "~/.claude/skills",
-        "rules_file": "~/.claude/CLAUDE.md"
+        "rules_file": "~/.claude/CLAUDE.md",
+        "commands_dir": "~/.claude/commands"
       }
     }
   },
@@ -19,11 +21,15 @@
     "targets": {
       "project": {
         "skills_dir": ".cursor/skills",
-        "rules_file": "AGENTS.md"
+        "rules_file": "AGENTS.md",
+        "rules_dir": ".cursor/rules",
+        "prompts_dir": ".cursor/prompts"
       },
       "global": {
         "skills_dir": "~/.cursor/skills",
-        "rules_file": "~/AGENTS.md"
+        "rules_file": "~/AGENTS.md",
+        "rules_dir": "~/.cursor/rules",
+        "prompts_dir": "~/.cursor/prompts"
       }
     }
   },

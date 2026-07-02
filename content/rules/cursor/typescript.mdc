@@ -1,0 +1,13 @@
+---
+description: TypeScript conventions for this project
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# TypeScript
+
+- Zero `any` without an explicit justification comment
+- Prefer `interface` over `type` for object shapes
+- Use `unknown` for external data; narrow with type guards
+- Model states with discriminated unions, not optional fields
+- Generic parameters use descriptive names (`TUser`, not `T`)

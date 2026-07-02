@@ -9,6 +9,7 @@ import {
   listAgentIds,
   resolveTarget,
 } from "./agents.js";
+import { resolveArtifacts } from "./artifacts.js";
 import {
   conflictWarning,
   decideAction,
@@ -46,6 +47,12 @@ function parseScopeFlag(value) {
 function scopesForChoice(scope) {
   if (scope === "both") return ["project", "global"];
   return [scope];
+}
+
+function getPromptArtifactType(agent) {
+  if (agent === "claude") return "commands";
+  if (agent === "cursor") return "prompts";
+  return null;
 }
 
 async function selectAgents(cwd, flags) {
@@ -95,27 +102,6 @@ async function selectScope(flags) {
   return "project";
 }
 
-function listSkillNames(contentDir) {
-  const skillsRoot = join(contentDir, "skills");
-  if (!existsSync(skillsRoot)) return [];
-  return readdirSync(skillsRoot, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => entry.name);
-}
-
-function collectSkillFiles(skillDir) {
-  const files = [];
-  function walk(dir) {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      const full = join(dir, entry.name);
-      if (entry.isDirectory()) walk(full);
-      else files.push(full);
-    }
-  }
-  walk(skillDir);
-  return files;
-}
-
 function buildSkillManifestEntries(contentDir, skillName, destDir, agent) {
   const entries = [];
   const srcDir = join(contentDir, "skills", skillName);
@@ -132,6 +118,7 @@ function buildSkillManifestEntries(contentDir, skillName, destDir, agent) {
           dest: destPath,
           hash: hashFile(destPath),
           agent,
+          type: "skill",
         });
       }
     }
@@ -141,13 +128,23 @@ function buildSkillManifestEntries(contentDir, skillName, destDir, agent) {
   return entries;
 }
 
-function buildRulesManifestEntry(contentDir, rulesFile, dest, agent) {
+function buildFileManifestEntry(src, dest, agent, type) {
   return {
-    src: join("content/rules", rulesFile),
+    src,
     dest,
     hash: hashFile(dest),
     agent,
+    type,
   };
+}
+
+function formatArtifactSummary(artifacts) {
+  const parts = [];
+  if (artifacts.skills.length) parts.push(`skills: ${artifacts.skills.join(", ")}`);
+  if (artifacts.mdRules.length) parts.push(`rules: ${artifacts.mdRules.join(", ")}`);
+  if (artifacts.mdcRules.length) parts.push(`mdc: ${artifacts.mdcRules.join(", ")}`);
+  if (artifacts.prompts.length) parts.push(`prompts: ${artifacts.prompts.join(", ")}`);
+  return parts.length ? parts.join("; ") : "(none)";
 }
 
 async function applyCopy({
@@ -217,16 +214,15 @@ export async function install(flags = {}) {
   const stack = detectStack(target);
   const existingManifest = readManifest(target);
   const backupRoot = join(target, ".ai-toolkit", "backups", String(Date.now()));
+  const artifacts = resolveArtifacts(flags, contentDir);
 
   console.log(`🔍 Stack: ${stack}`);
   if (dryRun) console.log("🏃 Dry run — no files will be written\n");
 
   const agents = await selectAgents(target, flags);
   const scope = await selectScope(flags);
-  const skillNames = listSkillNames(contentDir);
 
-  console.log(`\n📦 Skills: ${skillNames.join(", ") || "(none)"}`);
-  console.log(`📋 Rules: copying agent-specific rules`);
+  console.log(`\n📦 Artifacts: ${formatArtifactSummary(artifacts)}`);
   console.log(`🎯 Agents: ${agents.map(getAgentName).join(", ")}`);
   console.log(`📁 Scope: ${scope}`);
 
@@ -254,11 +250,12 @@ export async function install(flags = {}) {
 
   for (const agent of agents) {
     const rulesFile = getRulesSourceFile(agent);
+    const promptType = getPromptArtifactType(agent);
 
     for (const scopeChoice of scopesForChoice(scope)) {
       const skillsDestRoot = resolveTarget(agent, scopeChoice, "skills", target);
 
-      for (const skillName of skillNames) {
+      for (const skillName of artifacts.skills) {
         const src = join(contentDir, "skills", skillName);
         const dest = join(skillsDestRoot, skillName);
         const result = await applyCopy({
@@ -283,32 +280,111 @@ export async function install(flags = {}) {
         flushManifest();
       }
 
-      const rulesSrc = join(contentDir, "rules", rulesFile);
-      const rulesDest = resolveTarget(agent, scopeChoice, "rules", target);
-      if (!existsSync(rulesSrc)) continue;
+      if (artifacts.mdRules.includes(rulesFile)) {
+        const rulesSrc = join(contentDir, "rules", rulesFile);
+        const rulesDest = resolveTarget(agent, scopeChoice, "rules", target);
+        if (existsSync(rulesSrc)) {
+          const result = await applyCopy({
+            src: rulesSrc,
+            dest: rulesDest,
+            isDirectory: false,
+            isRulesFile: true,
+            manifest: existingManifest,
+            flags,
+            backupRoot,
+            dryRun,
+            scopeChoice,
+          });
 
-      const result = await applyCopy({
-        src: rulesSrc,
-        dest: rulesDest,
-        isDirectory: false,
-        isRulesFile: true,
-        manifest: existingManifest,
-        flags,
-        backupRoot,
-        dryRun,
-        scopeChoice,
-      });
+          if (result.copied) {
+            copiedCount += 1;
+            if (!dryRun) {
+              manifestFiles = upsertFileEntry(
+                manifestFiles,
+                buildFileManifestEntry(
+                  join("content/rules", rulesFile),
+                  rulesDest,
+                  agent,
+                  "rule",
+                ),
+              );
+              flushManifest();
+            }
+          }
+        }
+      }
 
-      if (!result.copied) continue;
+      if (agent === "cursor") {
+        for (const mdcName of artifacts.mdcRules) {
+          const src = join(contentDir, "rules", "cursor", `${mdcName}.mdc`);
+          const rulesDir = resolveTarget(agent, scopeChoice, "rules_dir", target);
+          const dest = join(rulesDir, `${mdcName}.mdc`);
+          if (!existsSync(src)) continue;
 
-      copiedCount += 1;
-      if (dryRun) continue;
+          const result = await applyCopy({
+            src,
+            dest,
+            isDirectory: false,
+            manifest: existingManifest,
+            flags,
+            backupRoot,
+            dryRun,
+            scopeChoice,
+          });
 
-      manifestFiles = upsertFileEntry(
-        manifestFiles,
-        buildRulesManifestEntry(contentDir, rulesFile, rulesDest, agent),
-      );
-      flushManifest();
+          if (result.copied) {
+            copiedCount += 1;
+            if (!dryRun) {
+              manifestFiles = upsertFileEntry(
+                manifestFiles,
+                buildFileManifestEntry(
+                  join("content/rules/cursor", `${mdcName}.mdc`),
+                  dest,
+                  agent,
+                  "mdc",
+                ),
+              );
+              flushManifest();
+            }
+          }
+        }
+      }
+
+      if (promptType) {
+        for (const promptName of artifacts.prompts) {
+          const src = join(contentDir, "prompts", `${promptName}.md`);
+          const promptDir = resolveTarget(agent, scopeChoice, promptType, target);
+          const dest = join(promptDir, `${promptName}.md`);
+          if (!existsSync(src)) continue;
+
+          const result = await applyCopy({
+            src,
+            dest,
+            isDirectory: false,
+            manifest: existingManifest,
+            flags,
+            backupRoot,
+            dryRun,
+            scopeChoice,
+          });
+
+          if (result.copied) {
+            copiedCount += 1;
+            if (!dryRun) {
+              manifestFiles = upsertFileEntry(
+                manifestFiles,
+                buildFileManifestEntry(
+                  join("content/prompts", `${promptName}.md`),
+                  dest,
+                  agent,
+                  "prompt",
+                ),
+              );
+              flushManifest();
+            }
+          }
+        }
+      }
     }
   }
 

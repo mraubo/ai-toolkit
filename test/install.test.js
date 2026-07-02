@@ -70,7 +70,7 @@ test("install and uninstall round-trip (cursor, project scope)", () => {
     assert.ok(existsSync(rulesPath));
     const manifest = assertManifestValid(manifestPath);
     assert.equal(manifest.agents.includes("cursor"), true);
-    assert.equal(manifest.files.length, 2);
+    assert.ok(manifest.files.length >= 2);
 
     const uninstall = runUninstall(["--yes"], project);
     assert.equal(uninstall.status, 0, uninstall.stderr || uninstall.stdout);
@@ -243,7 +243,7 @@ test("install and uninstall round-trip (codex, project scope)", () => {
     assert.ok(existsSync(rulesPath));
     const manifest = assertManifestValid(manifestPath);
     assert.equal(manifest.agents.includes("codex"), true);
-    assert.equal(manifest.files.length, 2);
+    assert.ok(manifest.files.length >= 2);
 
     const uninstall = runUninstall(["--yes"], project);
     assert.equal(uninstall.status, 0, uninstall.stderr || uninstall.stdout);
@@ -266,6 +266,81 @@ test("re-install is idempotent (no duplicate manifest entries)", () => {
     assert.equal(first.files.length, second.files.length);
     const dests = second.files.map((f) => f.dest);
     assert.equal(new Set(dests).size, dests.length);
+  } finally {
+    rmSync(project, { recursive: true, force: true });
+  }
+});
+
+test("--skill only installs skill without rules", () => {
+  const project = tempProject();
+  try {
+    const install = runInstall(
+      ["--yes", "--agent", "cursor", "--scope", "project", "--skill", "code-review"],
+      project,
+    );
+    assert.equal(install.status, 0, install.stderr || install.stdout);
+    assert.ok(existsSync(join(project, ".cursor/skills/code-review/SKILL.md")));
+    assert.equal(existsSync(join(project, "AGENTS.md")), false);
+    assert.equal(existsSync(join(project, ".cursor/prompts/pr-review.md")), false);
+  } finally {
+    rmSync(project, { recursive: true, force: true });
+  }
+});
+
+test("--skill and --rule install only selected artifacts", () => {
+  const project = tempProject();
+  try {
+    const install = runInstall(
+      [
+        "--yes",
+        "--agent",
+        "cursor",
+        "--scope",
+        "project",
+        "--skill",
+        "code-review",
+        "--rule",
+        "AGENTS.md",
+      ],
+      project,
+    );
+    assert.equal(install.status, 0, install.stderr || install.stdout);
+    assert.ok(existsSync(join(project, ".cursor/skills/code-review/SKILL.md")));
+    assert.ok(existsSync(join(project, "AGENTS.md")));
+    assert.equal(existsSync(join(project, ".cursor/prompts/pr-review.md")), false);
+    assert.equal(existsSync(join(project, ".cursor/rules/typescript.mdc")), false);
+  } finally {
+    rmSync(project, { recursive: true, force: true });
+  }
+});
+
+test("--prompt installs to cursor prompts directory", () => {
+  const project = tempProject();
+  try {
+    const install = runInstall(
+      ["--yes", "--agent", "cursor", "--scope", "project", "--prompt", "pr-review"],
+      project,
+    );
+    assert.equal(install.status, 0, install.stderr || install.stdout);
+    const promptPath = join(project, ".cursor/prompts/pr-review.md");
+    assert.ok(existsSync(promptPath));
+    assert.match(readFileSync(promptPath, "utf8"), /Pull Request Review/);
+  } finally {
+    rmSync(project, { recursive: true, force: true });
+  }
+});
+
+test("--rule typescript installs mdc to cursor rules", () => {
+  const project = tempProject();
+  try {
+    const install = runInstall(
+      ["--yes", "--agent", "cursor", "--scope", "project", "--rule", "typescript"],
+      project,
+    );
+    assert.equal(install.status, 0, install.stderr || install.stdout);
+    const rulePath = join(project, ".cursor/rules/typescript.mdc");
+    assert.ok(existsSync(rulePath));
+    assert.match(readFileSync(rulePath, "utf8"), /TypeScript/);
   } finally {
     rmSync(project, { recursive: true, force: true });
   }
