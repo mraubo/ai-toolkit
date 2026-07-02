@@ -88,7 +88,7 @@ main() {
   echo "  npx -y @mraubo/ai-toolkit doctor"
   echo
   echo "Install in a project with:"
-  echo "  npx -y @mraubo/ai-toolkit@0.2.0 install"
+  echo "  npx -y @mraubo/ai-toolkit@0.2.1 install"
 }
 
 main "$@"

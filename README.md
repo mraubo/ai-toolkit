@@ -40,7 +40,7 @@ grep -q '//npm.pkg.github.com/:_authToken=' ~/.npmrc 2>/dev/null || \
 Verify auth with:
 
 ```bash
-npx -y @mraubo/ai-toolkit@0.2.0 doctor
+npx -y @mraubo/ai-toolkit@0.2.1 doctor
 ```
 
 ## Install
@@ -48,7 +48,7 @@ npx -y @mraubo/ai-toolkit@0.2.0 doctor
 From any project directory (PHP, Elixir, Node — no `package.json` required):
 
 ```bash
-npx -y @mraubo/ai-toolkit@0.2.0 install
+npx -y @mraubo/ai-toolkit@0.2.1 install
 ```
 
 Interactive flow detects stack and installed agents, then prompts for scope and conflicts.
@@ -56,7 +56,7 @@ Interactive flow detects stack and installed agents, then prompts for scope and 
 Non-interactive example:
 
 ```bash
-npx -y @mraubo/ai-toolkit@0.2.0 install \
+npx -y @mraubo/ai-toolkit@0.2.1 install \
   --agent cursor \
   --scope project \
   --yes
@@ -97,10 +97,10 @@ When any granular flag (`--skill`, `--rule`, `--prompt`) is set, only the listed
 ## List, doctor, update
 
 ```bash
-npx -y @mraubo/ai-toolkit@0.2.0 list              # bundled catalog
-npx -y @mraubo/ai-toolkit@0.2.0 list --installed  # manifest status
-npx -y @mraubo/ai-toolkit@0.2.0 doctor            # Node, auth, manifest, drift
-npx -y @mraubo/ai-toolkit@0.2.0 update --yes      # re-sync from package version
+npx -y @mraubo/ai-toolkit@0.2.1 list              # bundled catalog
+npx -y @mraubo/ai-toolkit@0.2.1 list --installed  # manifest status
+npx -y @mraubo/ai-toolkit@0.2.1 doctor            # Node, auth, manifest, drift
+npx -y @mraubo/ai-toolkit@0.2.1 update --yes      # re-sync from package version
 ```
 
 `doctor` exits `0` when healthy, `1` when actionable issues are found (useful in CI).
@@ -112,7 +112,7 @@ For Node projects that depend on `@mraubo/ai-toolkit`, you can auto-install arti
 ```json
 {
   "dependencies": {
-    "@mraubo/ai-toolkit": "^0.2.0"
+    "@mraubo/ai-toolkit": "^0.2.1"
   },
   "scripts": {
     "preinstall": "export AI_TOOLKIT_AUTO_INSTALL=1"
@@ -137,7 +137,7 @@ Errors during auto-install print a warning and exit `0` so they do not break `np
 Removes only manifest-tracked files:
 
 ```bash
-npx -y @mraubo/ai-toolkit@0.2.0 uninstall --yes
+npx -y @mraubo/ai-toolkit@0.2.1 uninstall --yes
 ```
 
 **Global scope warning:** If you installed with `--scope global` or `both`, the manifest may include paths under your home directory (e.g. `~/.cursor/skills/code-review/`, `~/AGENTS.md`). Running `uninstall` from a project removes **all** manifest-tracked paths — including shared global artifacts that other projects may rely on. Review `.ai-toolkit/manifest.json` before uninstalling, or reinstall globally from a dedicated directory if you only want to clean one project.
@@ -175,8 +175,8 @@ npm test
 
 ```bash
 npm test
-git tag v0.2.0
-git push origin v0.2.0
+git tag v0.2.1
+git push origin v0.2.1
 ```
 
 CI runs tests, `npm pack --dry-run`, then publishes to GitHub Packages.
