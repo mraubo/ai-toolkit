@@ -1,6 +1,6 @@
 {
   "name": "@mraubo/ai-toolkit",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Corporate AI dev artifacts for Cursor, Claude Code, and Codex",
   "author": "Mateusz Raubo <mateusz.raubo@gmail.com>",
   "license": "MIT",
@@ -26,6 +26,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "postinstall": "node scripts/postinstall.js"
   }
 }

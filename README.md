@@ -1,6 +1,6 @@
 # @mraubo/ai-toolkit
 
-Private CLI installer for corporate AI artifacts (skills, rules) — distributed via [GitHub Packages](https://github.com/features/packages). Copy-installs into native **Cursor** and **Claude Code** directories.
+Private CLI installer for corporate AI artifacts (skills, rules, prompts) — distributed via [GitHub Packages](https://github.com/features/packages). Copy-installs into native **Cursor**, **Claude Code**, and **Codex** directories.
 
 ## Prerequisites
 
@@ -37,12 +37,18 @@ grep -q '//npm.pkg.github.com/:_authToken=' ~/.npmrc 2>/dev/null || \
   printf '//npm.pkg.github.com/:_authToken=%s\n' "$TOKEN" >> ~/.npmrc
 ```
 
+Verify auth with:
+
+```bash
+npx -y @mraubo/ai-toolkit@0.2.0 doctor
+```
+
 ## Install
 
 From any project directory (PHP, Elixir, Node — no `package.json` required):
 
 ```bash
-npx -y @mraubo/ai-toolkit@0.1.2 install
+npx -y @mraubo/ai-toolkit@0.2.0 install
 ```
 
 Interactive flow detects stack and installed agents, then prompts for scope and conflicts.
@@ -50,7 +56,7 @@ Interactive flow detects stack and installed agents, then prompts for scope and 
 Non-interactive example:
 
 ```bash
-npx -y @mraubo/ai-toolkit@0.1.2 install \
+npx -y @mraubo/ai-toolkit@0.2.0 install \
   --agent cursor \
   --scope project \
   --yes
@@ -60,28 +66,76 @@ npx -y @mraubo/ai-toolkit@0.1.2 install \
 
 | Flag | Description |
 |------|-------------|
-| `--agent <claude,cursor\|all>` | Target agent(s) |
+| `--agent <claude,cursor,codex\|all>` | Target agent(s) |
 | `--scope <project\|global\|both>` | Install to project dir, home dir, or both |
+| `--skill <name>` | Install selected skill(s), comma-separated |
+| `--rule <name>` | Install selected rule(s): `AGENTS.md`, `CLAUDE.md`, or `.mdc` basename (e.g. `typescript`) |
+| `--prompt <name>` | Install selected prompt(s), comma-separated |
 | `--target <path>` | Target project directory (default: cwd) |
 | `--yes`, `-y` | Skip prompts; **creates** missing/empty rules files; skips existing user-owned files with warning |
 | `--force` | Overwrite existing files on conflict |
 | `--dry-run` | Preview planned copies; write nothing |
 
+When any granular flag (`--skill`, `--rule`, `--prompt`) is set, only the listed categories install. Example: `--skill code-review` alone installs the skill only — no rules or prompts.
+
 ### What gets installed
 
-- `content/skills/code-review/` → `.cursor/skills/code-review/` (or `.claude/skills/…`)
-- `content/rules/AGENTS.md` → project root (Cursor)
-- `content/rules/CLAUDE.md` → project root (Claude Code)
-- `.ai-toolkit/manifest.json` — tracks every installed file with SHA256 hash
+| Artifact | Source | Cursor | Claude Code | Codex |
+|----------|--------|--------|-------------|-------|
+| Skills | `content/skills/<name>/` | `.cursor/skills/<name>/` | `.claude/skills/<name>/` | `.agents/skills/<name>/` |
+| Rules | `content/rules/AGENTS.md` | project root | — | project root |
+| Rules | `content/rules/CLAUDE.md` | — | project root | — |
+| Cursor rules | `content/rules/cursor/*.mdc` | `.cursor/rules/<basename>` | — | — |
+| Prompts | `content/prompts/<name>.md` | `.cursor/prompts/<name>.md` | `.claude/commands/<name>.md` | *(unsupported)* |
 
-**Recommended:** commit `.ai-toolkit/manifest.json`, `.cursor/skills/`, and rules files in target projects so the team shares the same toolkit version.
+`.ai-toolkit/manifest.json` tracks every installed file with SHA256 hash.
+
+**Codex prompts:** Codex has no verified native prompts directory — prompt installation is skipped for Codex.
+
+**Recommended:** commit `.ai-toolkit/manifest.json`, agent skill directories, and rules files in target projects so the team shares the same toolkit version.
+
+## List, doctor, update
+
+```bash
+npx -y @mraubo/ai-toolkit@0.2.0 list              # bundled catalog
+npx -y @mraubo/ai-toolkit@0.2.0 list --installed  # manifest status
+npx -y @mraubo/ai-toolkit@0.2.0 doctor            # Node, auth, manifest, drift
+npx -y @mraubo/ai-toolkit@0.2.0 update --yes      # re-sync from package version
+```
+
+`doctor` exits `0` when healthy, `1` when actionable issues are found (useful in CI).
+
+## Opt-in auto-install (Node projects)
+
+For Node projects that depend on `@mraubo/ai-toolkit`, you can auto-install artifacts on `npm install` by setting an environment variable:
+
+```json
+{
+  "dependencies": {
+    "@mraubo/ai-toolkit": "^0.2.0"
+  },
+  "scripts": {
+    "preinstall": "export AI_TOOLKIT_AUTO_INSTALL=1"
+  }
+}
+```
+
+Or in CI / shell before install:
+
+```bash
+AI_TOOLKIT_AUTO_INSTALL=1 npm install
+```
+
+When `AI_TOOLKIT_AUTO_INSTALL=1`, the package `postinstall` hook runs `install --yes --agent all --scope project` in the consumer project (`INIT_CWD`). Without the env var, `npm install` does **not** write any AI artifacts — safe for teams that prefer explicit `npx` installs.
+
+Errors during auto-install print a warning and exit `0` so they do not break `npm install`.
 
 ## Uninstall
 
 Removes only manifest-tracked files:
 
 ```bash
-npx -y @mraubo/ai-toolkit@0.1.2 uninstall --yes
+npx -y @mraubo/ai-toolkit@0.2.0 uninstall --yes
 ```
 
 **Global scope warning:** If you installed with `--scope global` or `both`, the manifest may include paths under your home directory (e.g. `~/.cursor/skills/code-review/`, `~/AGENTS.md`). Running `uninstall` from a project removes **all** manifest-tracked paths — including shared global artifacts that other projects may rely on. Review `.ai-toolkit/manifest.json` before uninstalling, or reinstall globally from a dedicated directory if you only want to clean one project.
@@ -119,8 +173,8 @@ npm test
 
 ```bash
 npm test
-git tag v0.1.2
-git push origin v0.1.2
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
 CI runs tests, `npm pack --dry-run`, then publishes to GitHub Packages.

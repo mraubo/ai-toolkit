@@ -84,8 +84,11 @@ main() {
   ensure_gh_auth
   configure_npmrc
   echo
-  echo "Done. Install in a project with:"
-  echo "  npx -y @mraubo/ai-toolkit@0.1.2 install"
+  echo "Done. Verify setup with:"
+  echo "  npx -y @mraubo/ai-toolkit doctor"
+  echo
+  echo "Install in a project with:"
+  echo "  npx -y @mraubo/ai-toolkit@0.2.0 install"
 }
 
 main "$@"

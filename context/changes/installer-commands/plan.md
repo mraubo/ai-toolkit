@@ -422,22 +422,22 @@ Existing `.ai-toolkit/manifest.json` from v0.1.x remains valid. `update` adds op
 
 #### Automated
 
-- [x] 3.1 `npm test` covers `--skill`-only, `--prompt`, and mdc rule install
-- [x] 3.2 `npm pack --dry-run` includes `content/prompts/` and new rules
+- [x] 3.1 `npm test` covers `--skill`-only, `--prompt`, and mdc rule install — d755dc3
+- [x] 3.2 `npm pack --dry-run` includes `content/prompts/` and new rules — d755dc3
 
 #### Manual
 
-- [x] 3.3 Selective install installs only flagged artifacts
-- [x] 3.4 Prompt file lands in `.cursor/prompts/` (or documented path)
+- [x] 3.3 Selective install installs only flagged artifacts — d755dc3
+- [x] 3.4 Prompt file lands in `.cursor/prompts/` (or documented path) — d755dc3
 
 ### Phase 4: Opt-in Postinstall + Documentation
 
 #### Automated
 
-- [ ] 4.1 `npm test` passes postinstall gate test
-- [ ] 4.2 `npm pack --dry-run` includes `scripts/postinstall.js`
+- [x] 4.1 `npm test` passes postinstall gate test
+- [x] 4.2 `npm pack --dry-run` includes `scripts/postinstall.js`
 
 #### Manual
 
-- [ ] 4.3 Consumer project with `AI_TOOLKIT_AUTO_INSTALL=1` auto-installs on `npm install`
-- [ ] 4.4 Without env var, `npm install` does not write AI artifacts
+- [x] 4.3 Consumer project with `AI_TOOLKIT_AUTO_INSTALL=1` auto-installs on `npm install`
+- [x] 4.4 Without env var, `npm install` does not write AI artifacts
