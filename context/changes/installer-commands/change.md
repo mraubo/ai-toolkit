@@ -1,7 +1,7 @@
 ---
 change_id: installer-commands
 title: Add v1.1+ installer commands and post-MVP features
-status: implemented
+status: impl_reviewed
 created: 2026-07-01
 updated: 2026-07-02
 archived_at: null

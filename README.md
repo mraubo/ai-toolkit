@@ -126,7 +126,9 @@ Or in CI / shell before install:
 AI_TOOLKIT_AUTO_INSTALL=1 npm install
 ```
 
-When `AI_TOOLKIT_AUTO_INSTALL=1`, the package `postinstall` hook runs `install --yes --agent all --scope project` in the consumer project (`INIT_CWD`). Without the env var, `npm install` does **not** write any AI artifacts — safe for teams that prefer explicit `npx` installs.
+When `AI_TOOLKIT_AUTO_INSTALL=1`, the package `postinstall` hook runs `install --yes --agent all --scope project` in the consumer project (`INIT_CWD`). This installs artifacts for **all supported agents** (Claude, Cursor, and Codex) — not just the agent you use day-to-day. Expect `.claude/`, `.cursor/`, and `.agents/` directories (plus `AGENTS.md` / `CLAUDE.md` as applicable) to appear in the project root.
+
+Without the env var, `npm install` does **not** write any AI artifacts — safe for teams that prefer explicit `npx` installs.
 
 Errors during auto-install print a warning and exit `0` so they do not break `npm install`.
 

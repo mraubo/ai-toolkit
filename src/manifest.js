@@ -15,7 +15,11 @@ export function manifestPath(cwd) {
 export function readManifest(cwd) {
   const path = manifestPath(cwd);
   if (!existsSync(path)) return null;
-  return JSON.parse(readFileSync(path, "utf8"));
+  try {
+    return JSON.parse(readFileSync(path, "utf8"));
+  } catch (error) {
+    throw new Error(`ai-toolkit: invalid manifest at ${path}: ${error.message}`);
+  }
 }
 
 export function writeManifest(cwd, data) {
