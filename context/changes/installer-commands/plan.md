@@ -434,10 +434,10 @@ Existing `.ai-toolkit/manifest.json` from v0.1.x remains valid. `update` adds op
 
 #### Automated
 
-- [x] 4.1 `npm test` passes postinstall gate test
-- [x] 4.2 `npm pack --dry-run` includes `scripts/postinstall.js`
+- [x] 4.1 `npm test` passes postinstall gate test — bf1f666
+- [x] 4.2 `npm pack --dry-run` includes `scripts/postinstall.js` — bf1f666
 
 #### Manual
 
-- [x] 4.3 Consumer project with `AI_TOOLKIT_AUTO_INSTALL=1` auto-installs on `npm install`
-- [x] 4.4 Without env var, `npm install` does not write AI artifacts
+- [x] 4.3 Consumer project with `AI_TOOLKIT_AUTO_INSTALL=1` auto-installs on `npm install` — bf1f666
+- [x] 4.4 Without env var, `npm install` does not write AI artifacts — bf1f666
